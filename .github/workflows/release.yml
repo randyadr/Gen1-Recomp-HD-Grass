@@ -3,11 +3,15 @@ name: Build Gen1Recomp Release
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 permissions:
   contents: write
+
+concurrency:
+  group: gen1recomp-release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
@@ -23,10 +27,11 @@ jobs:
           python3 - <<'PY' >> "$GITHUB_OUTPUT"
           import json, os
           from pathlib import Path
-          m = json.loads(Path("manifest.json").read_text())
+
+          m = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
           mod_id = m["id"]
           version = m["version"]
-          expected_github = f"{os.environ['GITHUB_REPOSITORY']}"
+          expected_github = os.environ["GITHUB_REPOSITORY"]
           if m.get("github") != expected_github:
               raise SystemExit(
                   f"manifest github={m.get('github')!r}, expected {expected_github!r}"
@@ -37,21 +42,12 @@ jobs:
           print(f"zip={mod_id}-{version}.zip")
           PY
 
-      - name: Ensure pushed tag matches manifest
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          if [ "${GITHUB_REF_NAME}" != "${{ steps.meta.outputs.tag }}" ]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match manifest version ${{ steps.meta.outputs.version }}" >&2
-            exit 1
-          fi
-
       - name: Build installable ZIP
         shell: bash
         run: |
           python3 tools/build_release.py --output "${{ runner.temp }}/${{ steps.meta.outputs.zip }}"
 
-      - name: Publish or refresh GitHub Release
+      - name: Create or refresh GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.meta.outputs.tag }}
