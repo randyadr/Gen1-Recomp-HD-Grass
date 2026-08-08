@@ -3,7 +3,7 @@ setlocal
 cd /d "%~dp0"
 
 echo ============================================================
-echo  Gen1Recomp Grass OBJ Replacer - One Click Publisher
+echo  Grass OBJ Replacer - PUBLISH UPDATE
 echo ============================================================
 echo.
 
@@ -12,13 +12,11 @@ set ERR=%ERRORLEVEL%
 
 echo.
 if not "%ERR%"=="0" (
-  echo Publish failed. Read the error above.
+  echo Publish FAILED. Read the message above.
   pause
   exit /b %ERR%
 )
 
-echo Publish command finished successfully.
-echo GitHub Actions will build the release automatically.
-echo.
+echo Publish finished successfully.
 pause
 exit /b 0
