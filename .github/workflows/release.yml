@@ -1,0 +1,68 @@
+name: Build Gen1Recomp Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read and validate manifest version
+        id: meta
+        shell: bash
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from pathlib import Path
+          m = json.loads(Path("manifest.json").read_text())
+          mod_id = m["id"]
+          version = m["version"]
+          expected_github = f"{os.environ['GITHUB_REPOSITORY']}"
+          if m.get("github") != expected_github:
+              raise SystemExit(
+                  f"manifest github={m.get('github')!r}, expected {expected_github!r}"
+              )
+          print(f"id={mod_id}")
+          print(f"version={version}")
+          print(f"tag=v{version}")
+          print(f"zip={mod_id}-{version}.zip")
+          PY
+
+      - name: Ensure pushed tag matches manifest
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "${{ steps.meta.outputs.tag }}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match manifest version ${{ steps.meta.outputs.version }}" >&2
+            exit 1
+          fi
+
+      - name: Build installable ZIP
+        shell: bash
+        run: |
+          python3 tools/build_release.py --output "${{ runner.temp }}/${{ steps.meta.outputs.zip }}"
+
+      - name: Publish or refresh GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          ZIP: ${{ runner.temp }}/${{ steps.meta.outputs.zip }}
+        shell: bash
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --generate-notes
+          fi

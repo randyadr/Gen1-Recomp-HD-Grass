@@ -1,0 +1,23 @@
+{
+  "id": "DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3",
+  "name": "Grass OBJ Replacer V3 - Dramatic + Dramaless",
+  "version": "3.4.0",
+  "api": 2,
+  "entry": "main.lua",
+  "profile": "content",
+  "category": "GRAPHICS",
+  "game_version": "0.0.0-dev || >=0.1.28 <2.0.0",
+  "priority": 9000,
+  "dependencies": [],
+  "optional_dependencies": [
+    "DRAMALESS_SHAPE",
+    "DRAMATIC_SHAPE"
+  ],
+  "conflicts": [],
+  "permissions": [
+    "engine_internals"
+  ],
+  "affects_link": false,
+  "description": "Optimized custom OBJ replacement for upright voxel grass in Dramaless Shape or Dramatic Shape, with indexed chunked rendering and faster 60 Hz wind sway.",
+  "github": "randyadr/gen1recomp-grass-obj-replacer"
+}

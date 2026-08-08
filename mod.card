@@ -1,0 +1,22 @@
+return {
+  summary = "Optimized custom-OBJ grass replacement for Dramaless Shape and Dramatic Shape.",
+  author = "randyadr",
+  tags = { "graphics", "voxel", "grass", "3d", "wind", "performance", "dramaless" },
+  differences = {
+    changed = {
+      "auto-detects DRAMALESS_SHAPE or DRAMATIC_SHAPE and patches the live voxel renderer",
+      "upright voxel grass is replaced at the ChunkMesher.grass / Voxel3D.draw seam",
+      "uploaded sht_grass.obj is placed at native 8x8 tuft positions when available",
+      "OBJ geometry is indexed and split into lazily built 64x64 world chunks",
+      "off-screen grass chunks are culled before Voxel3D.draw"
+    },
+    added = {
+      "Dramaless st_voxel pipeline bridge",
+      "idle GPU chunk eviction",
+      "visible-chunk-only legacy CPU sway at a fixed 60 Hz real-time cadence with faster wind",
+      "precomputed legacy phase math to make 60 Hz sway substantially cheaper",
+      "bridge and cache diagnostics through mod exports"
+    }
+  },
+  compat = { modApi = 2 }
+}
