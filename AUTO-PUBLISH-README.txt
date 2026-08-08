@@ -7,7 +7,7 @@ so Windows has no connection between that folder and your GitHub repository.
 
 FIRST TIME / EVERY UPDATE
 1. Make sure this public GitHub repo exists:
-   https://github.com/randyadr/gen1recomp-grass-obj-replacer
+   https://github.com/randyadr/Gen1-Recomp-HD-Grass
 2. Extract this repo ZIP to a normal folder.
 3. Overwrite/change whatever mod files you want.
 4. Double-click PUBLISH_UPDATE.bat.

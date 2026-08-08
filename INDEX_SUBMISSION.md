@@ -6,7 +6,7 @@ The ready entry is:
 
 After this source repository exists at:
 
-`https://github.com/randyadr/gen1recomp-grass-obj-replacer`
+`https://github.com/randyadr/Gen1-Recomp-HD-Grass`
 
 and you have published the first **v3.4.0** GitHub Release with the installable ZIP asset, submit the index entry:
 

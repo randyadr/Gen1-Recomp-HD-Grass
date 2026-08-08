@@ -31,7 +31,7 @@ The mod uses the Gen1Recomp `engine_internals` permission because Dramaless comp
 The manifest contains:
 
 ```json
-"github": "randyadr/gen1recomp-grass-obj-replacer"
+"github": "randyadr/Gen1-Recomp-HD-Grass"
 ```
 
 That lets Gen1Recomp's **Update** / **Versions** flow follow installable ZIP assets from this repository's GitHub Releases.
@@ -65,4 +65,4 @@ The Lua code and repository tooling are MIT licensed. The bundled model/textures
 
 This repository includes `PUBLISH_UPDATE.bat`. A downloaded source ZIP does **not** contain Git's hidden `.git` metadata, so simply overwriting files does not push them to GitHub. Run `PUBLISH_UPDATE.bat` after changing/overwriting files.
 
-The publisher links the folder to `randyadr/gen1recomp-grass-obj-replacer` when necessary, automatically increments the patch version, stages all changes, creates the commit, and pushes `main`. The included GitHub Actions workflow runs on every push to `main` and creates or refreshes the matching GitHub Release and installable Gen1Recomp ZIP automatically.
+The publisher links the folder to `randyadr/Gen1-Recomp-HD-Grass` when necessary, automatically increments the patch version, stages all changes, creates the commit, and pushes `main`. The included GitHub Actions workflow runs on every push to `main` and creates or refreshes the matching GitHub Release and installable Gen1Recomp ZIP automatically.

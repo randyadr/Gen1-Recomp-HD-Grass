@@ -19,5 +19,5 @@
   ],
   "affects_link": false,
   "description": "Optimized custom OBJ replacement for upright voxel grass in Dramaless Shape or Dramatic Shape, with indexed chunked rendering and faster 60 Hz wind sway.",
-  "github": "randyadr/gen1recomp-grass-obj-replacer"
+  "github": "randyadr/Gen1-Recomp-HD-Grass"
 }

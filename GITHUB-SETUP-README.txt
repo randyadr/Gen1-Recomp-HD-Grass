@@ -3,7 +3,7 @@ GRASS OBJ REPLACER - GITHUB AUTO UPDATE SETUP
 
 The previous package had one missing step: it assumed this repository already existed:
 
-  randyadr/gen1recomp-grass-obj-replacer
+  randyadr/Gen1-Recomp-HD-Grass
 
 Gen1Recomp calls GitHub's public Releases API for that exact repo. If the repo is missing
 or private, GitHub returns HTTP 404 before Gen1Recomp ever looks at the mod ZIP.
@@ -15,7 +15,7 @@ FIRST USE
 3. If GitHub CLI needs login, complete the browser login as randyadr.
 4. The script will:
    - install Git/GitHub CLI with winget if needed
-   - create randyadr/gen1recomp-grass-obj-replacer as a PUBLIC repo if missing
+   - create randyadr/Gen1-Recomp-HD-Grass as a PUBLIC repo if missing
    - push this source repo
    - create the current v3.4.0 GitHub Release immediately
    - upload DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3-3.4.0.zip

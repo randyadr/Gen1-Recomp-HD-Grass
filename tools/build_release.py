@@ -47,7 +47,7 @@ def build(output: Path | None = None) -> Path:
         names = set(zf.namelist())
         if "manifest.json" not in names:
             raise SystemExit("release ZIP is invalid: manifest.json is not at archive root")
-        if any(name.startswith("gen1recomp-grass-obj-replacer/") for name in names):
+        if any(name.startswith("Gen1-Recomp-HD-Grass/") for name in names):
             raise SystemExit("release ZIP is invalid: files are nested under the repo folder")
     print(output)
     return output

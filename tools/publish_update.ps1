@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $Owner = "randyadr"
-$RepoName = "gen1recomp-grass-obj-replacer"
+$RepoName = "Gen1-Recomp-HD-Grass"
 $Repo = "$Owner/$RepoName"
 $RemoteUrl = "https://github.com/$Repo.git"
 $ManifestPath = Join-Path $RepoRoot "manifest.json"

@@ -4,7 +4,7 @@
 - Increased grass sway speed from the previous ~2.15–2.35 rad/s range to **6.0 rad/s**.
 - Modern GPU-wind voxel builds now receive the same faster wind rate through `Voxel3D.GRASS_WIND_SPEED`.
 - Legacy / Dramaless CPU-wind remains fixed at **60 Hz**; only the motion speed changed.
-- Added GitHub update metadata for `randyadr/gen1recomp-grass-obj-replacer`.
+- Added GitHub update metadata for `randyadr/Gen1-Recomp-HD-Grass`.
 - Added a GitHub Actions release workflow that creates index-compatible installable ZIP assets.
 - Added a ready-to-copy Gen1Recomp mod-index entry.
 
