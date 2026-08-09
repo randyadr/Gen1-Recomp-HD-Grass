@@ -1,33 +1,24 @@
-ONE-CLICK UPDATE / PUBLISH
-==========================
+HD GRASS + LGPE FLOWERS - GITHUB UPDATE REPO
+============================================
 
-Why overwriting files did not push anything:
-A downloaded ZIP is just files. It does not contain Git's hidden .git folder,
-so Windows has no connection between that folder and your GitHub repository.
+Target GitHub repo:
+  randyadr/Gen1-Recomp-HD-Grass
 
-FIRST TIME / EVERY UPDATE
-1. Make sure this public GitHub repo exists:
-   https://github.com/randyadr/Gen1-Recomp-HD-Grass
-2. Extract this repo ZIP to a normal folder.
-3. Overwrite/change whatever mod files you want.
-4. Double-click PUBLISH_UPDATE.bat.
-5. Sign into GitHub if Git for Windows asks you to authenticate.
+FASTEST UPDATE METHOD
+---------------------
+1. Extract this ZIP to a normal folder.
+2. Double-click PUBLISH_UPDATE.bat.
+3. Log into GitHub if prompted.
 
-PUBLISH_UPDATE.bat will:
-- connect a ZIP-extracted folder to your GitHub repository if needed
-- detect your changed files
-- automatically bump the patch version (for example 3.4.0 -> 3.4.1)
-- git add everything
-- create the commit
-- push main to GitHub
+If the extracted folder does not contain a .git directory, the publisher will
+attach it to the existing GitHub repo history WITHOUT deleting the combined-mod
+files in this folder.
 
-The included GitHub Action now runs on EVERY push to main. It automatically:
-- reads manifest.json
-- builds the installable Gen1Recomp ZIP
-- creates v<version> if it does not exist
-- uploads/replaces the correctly named release asset
+FIRST COMBINED RELEASE
+----------------------
+The combined mod starts at v1.0.0. If the repo does not already contain the
+combined release asset for v1.0.0, PUBLISH_UPDATE keeps v1.0.0 for the first
+publish. Future publishes automatically bump 1.0.0 -> 1.0.1 -> 1.0.2, etc.
 
-That GitHub Release is what Gen1Recomp's automatic update check sees.
-
-REQUIREMENT
-You need Git for Windows installed for PUBLISH_UPDATE.bat.
+The GitHub Action automatically builds the correct installable ZIP and creates
+or refreshes the matching GitHub Release.

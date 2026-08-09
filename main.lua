@@ -1,4 +1,9 @@
--- Grass OBJ Replacer V3.4 - Dramatic + Dramaless optimized, faster 60 Hz wind
+-- HD Grass + LGPE Wind Flowers Combined v1.0.0
+-- Combines the user's working HD Grass 3.4.0 build with the working
+-- LGPE Flower Replacer 4.1.0 build in one Gen1Recomp mod.
+-- Grass installs first; Flowers composes on top of the same live Voxel3D chain.
+
+-- HD Grass + LGPE Flowers Combined v1.0.0 - Grass installer
 --
 -- Companion mod for DRAMATIC_SHAPE or DRAMALESS_SHAPE. This does not register a competing world
 -- renderer. It replaces the live ChunkMesher.grass() answer used by the voxel
@@ -23,7 +28,7 @@
 --   Dramatic Shape's upright blocky/voxel tall-grass clumps ONLY.
 -- The voxel terrain / grass-coloured floor below them is left alone.
 
-return function(mod)
+local function installGrass(mod)
   ---------------------------------------------------------------- dependency
 
   -- The original Dramatic Shape publishes its live module namespace through
@@ -797,4 +802,509 @@ return function(mod)
     tostring(targetId), tostring(dep.version), tostring(bridgeMode),
     modernGrass and "modern" or "legacy", stats.triangles,
     stats.uniqueVertices, stats.expandedVertices, CHUNK_WORLD)
+end
+
+
+-- HD Grass + LGPE Flowers Combined v1.0.0 - Flower installer
+-- Fresh standalone extraction of the older combined flower replacement that
+-- previously replaced the native voxel flowers successfully.
+
+local function installFlowers(mod)
+  local dep = mod.find("DRAMALESS_SHAPE") or mod.find("DRAMATIC_SHAPE")
+  assert(dep, "LGPE Flower Replacer needs DRAMALESS_SHAPE or DRAMATIC_SHAPE enabled")
+
+  local targetId = dep.id
+  local ChunkMesher, Structures, Voxel3D
+  local bridgeMode
+
+  local function isChunkMesher(t)
+    return type(t) == "table"
+      and type(t.flowers) == "function"
+      and type(t.request) == "function"
+      and type(t.invalidate) == "function"
+  end
+
+  local function isVoxel3D(t)
+    return type(t) == "table"
+      and type(t.draw) == "function"
+      and type(t.newMesh) == "function"
+      and type(t.project) == "function"
+  end
+
+  local function isStructures(t)
+    return type(t) == "table"
+      and type(t.forMap) == "function"
+      and type(t.invalidate) == "function"
+  end
+
+  local function findUpvalueTable(fn, predicate, depth, seen)
+    if type(fn) ~= "function" or not (debug and debug.getupvalue) then return nil end
+    seen = seen or {}
+    if seen[fn] then return nil end
+    seen[fn] = true
+    depth = depth or 0
+    local i = 1
+    while true do
+      local name, value = debug.getupvalue(fn, i)
+      if name == nil then break end
+      if type(value) == "table" and predicate(value) then return value end
+      if depth > 0 and type(value) == "function" then
+        local hit = findUpvalueTable(value, predicate, depth - 1, seen)
+        if hit then return hit end
+      end
+      i = i + 1
+    end
+    return nil
+  end
+
+  local direct = dep.exports and dep.exports.lib
+  if type(direct) == "table" and type(direct.require) == "function" then
+    ChunkMesher = assert(direct.require("ChunkMesher"), "missing ChunkMesher")
+    Structures = assert(direct.require("Structures"), "missing Structures")
+    Voxel3D = assert(direct.require("Voxel3D"), "missing Voxel3D")
+    bridgeMode = "exports.lib"
+  else
+    local pipe = mod.content.render_pipelines:get("st_voxel")
+              or mod.content.render_pipelines:get("voxel")
+    assert(type(pipe) == "table", "voxel pipeline was not registered before LGPE Flower Replacer")
+    assert(debug and type(debug.getupvalue) == "function",
+      "Dramaless compatibility needs Lua debug.getupvalue")
+
+    local seeds = { pipe.invalidate, pipe.drawWorld, pipe.update, pipe.available }
+    for _, fn in ipairs(seeds) do
+      if not ChunkMesher then ChunkMesher = findUpvalueTable(fn, isChunkMesher, 5) end
+      if not Voxel3D then Voxel3D = findUpvalueTable(fn, isVoxel3D, 5) end
+    end
+    assert(isChunkMesher(ChunkMesher), "could not locate live Dramaless ChunkMesher")
+    assert(isVoxel3D(Voxel3D), "could not locate live Dramaless Voxel3D")
+
+    Structures = findUpvalueTable(ChunkMesher.geometry, isStructures, 6)
+              or findUpvalueTable(ChunkMesher.build, isStructures, 6)
+              or findUpvalueTable(ChunkMesher.get, isStructures, 7)
+    bridgeMode = "pipeline-upvalues"
+  end
+
+  assert(isChunkMesher(ChunkMesher), "ChunkMesher.flowers unavailable")
+  assert(isStructures(Structures), "Structures.forMap unavailable")
+  assert(isVoxel3D(Voxel3D), "Voxel3D API unavailable")
+
+  local FLOWER_CLUSTER_WIDTH = 7.5
+  local FLOWER_VERTICAL_SCALE = 1.0
+  local ANIM_HZ = 60
+  local WIND_SPEED = 4.2
+  local WIND_PIXELS = 0.55
+  local FLOWER_MODEL_SPEC = {
+    label = "LGPE Flower Cluster",
+    obj = "assets/flower_cluster.obj",
+    texture = "assets/flower.png",
+  }
+
+  local function parseIndex(token, count)
+    local n = tonumber(token)
+    if not n then return nil end
+    if n < 0 then return count + n + 1 end
+    return n
+  end
+
+  local function parseObj(spec)
+    local text = assert(mod:read(spec.obj), "could not read " .. spec.obj)
+    local positions, uvs = {}, {}
+    local faces = {}
+    local currentMaterial = nil
+    local minX, minY, minZ = math.huge, math.huge, math.huge
+    local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
+
+    for line in text:gmatch("[^\r\n]+") do
+      local x, y, z = line:match("^v%s+([%+%-%.%deE]+)%s+([%+%-%.%deE]+)%s+([%+%-%.%deE]+)")
+      if x then
+        x, y, z = tonumber(x), tonumber(y), tonumber(z)
+        positions[#positions + 1] = { x, y, z }
+        minX, minY, minZ = math.min(minX, x), math.min(minY, y), math.min(minZ, z)
+        maxX, maxY, maxZ = math.max(maxX, x), math.max(maxY, y), math.max(maxZ, z)
+      else
+        local u, v = line:match("^vt%s+([%+%-%.%deE]+)%s+([%+%-%.%deE]+)")
+        if u then
+          uvs[#uvs + 1] = { tonumber(u), tonumber(v) }
+        else
+          local material = line:match("^usemtl%s+(%S+)")
+          if material then
+            currentMaterial = material
+          elseif line:match("^f%s+") then
+            local refs = {}
+            for ref in line:gmatch("%S+") do
+              if ref ~= "f" then
+                local vi, ti = ref:match("^([^/]+)/([^/]*)")
+                if not vi then vi = ref:match("^([^/]+)") end
+                refs[#refs + 1] = { vi = vi, ti = ti }
+              end
+            end
+            if #refs >= 3 then
+              for i = 2, #refs - 1 do
+                faces[#faces + 1] = {
+                  material = currentMaterial,
+                  refs = { refs[1], refs[i], refs[i + 1] },
+                }
+              end
+            end
+          end
+        end
+      end
+    end
+
+    assert(#positions > 0 and #faces > 0, spec.label .. " OBJ has no usable geometry")
+
+    local cx = (minX + maxX) * 0.5
+    local width = math.max(0.0001, maxX - minX)
+    local depth = math.max(0.0001, maxZ - minZ)
+    local height = math.max(0.0001, maxY - minY)
+
+    local groups = {}
+    local triangles = 0
+    for _, face in ipairs(faces) do
+      local material = face.material or ""
+      if material == "body" then
+        local group = groups[material]
+        if not group then
+          group = { material = material, vertices = {}, indices = {}, byKey = {} }
+          groups[material] = group
+        end
+        triangles = triangles + 1
+        for _, ref in ipairs(face.refs) do
+          local vi = parseIndex(ref.vi, #positions)
+          local ti = ref.ti and ref.ti ~= "" and parseIndex(ref.ti, #uvs) or nil
+          local pv = positions[vi]
+          assert(pv, spec.label .. " face references a missing vertex")
+          local t = (ti and uvs[ti]) or { 0, 0 }
+          local key = string.format("%.6f:%.6f:%.6f:%.6f:%.6f",
+            pv[1], pv[2], pv[3], t[1] or 0, t[2] or 0)
+          local idx = group.byKey[key]
+          if not idx then
+            idx = #group.vertices + 1
+            group.byKey[key] = idx
+            group.vertices[idx] = {
+              x = pv[1] - cx,
+              y = pv[2] - minY,
+              z = pv[3] - maxZ,
+              u = t[1] or 0,
+              -- flower_cluster.obj was already converted from the source DAE
+              -- with V flipped into LÖVE/image space. Do NOT flip it again.
+              v = t[2] or 0,
+            }
+          end
+          group.indices[#group.indices + 1] = idx
+        end
+      end
+    end
+
+    local uniqueVertices = 0
+    local materials = 0
+    for _, group in pairs(groups) do
+      group.byKey = nil
+      uniqueVertices = uniqueVertices + #group.vertices
+      materials = materials + 1
+    end
+    assert(materials > 0, spec.label .. " OBJ produced no textured material groups")
+
+    return {
+      groups = groups,
+      minX = minX, maxX = maxX,
+      minY = minY, maxY = maxY,
+      minZ = minZ, maxZ = maxZ,
+      sourceWidth = width,
+      sourceHeight = height,
+      sourceDepth = depth,
+      triangles = triangles,
+      uniqueVertices = uniqueVertices,
+    }
+  end
+
+  local function parseFlowerObj(spec)
+    local parsed = parseObj {
+      label = spec.label,
+      obj = spec.obj,
+    }
+
+    local mat = assert(parsed.groups.body, "flower model did not produce a body material")
+    local tex = mod.assets:image(spec.texture)
+    assert(tex, "flower texture failed to load")
+    if tex.setFilter then tex:setFilter("nearest", "nearest") end
+
+    local verts, indices = {}, {}
+    for _, vertex in ipairs(mat.vertices) do
+      verts[#verts + 1] = {
+        x = vertex.x, y = vertex.y, z = vertex.z,
+        u = vertex.u, v = vertex.v, shade = 1.0,
+      }
+    end
+    for _, idx in ipairs(mat.indices) do indices[#indices + 1] = idx end
+
+    return {
+      label = spec.label,
+      texture = tex,
+      vertices = verts,
+      indices = indices,
+      triangles = parsed.triangles,
+      uniqueVertices = parsed.uniqueVertices,
+      sourceWidth = parsed.sourceWidth,
+      sourceHeight = parsed.sourceHeight,
+      sourceDepth = parsed.sourceDepth,
+      minX = parsed.minX, maxX = parsed.maxX,
+      minY = parsed.minY, maxY = parsed.maxY,
+      minZ = parsed.minZ, maxZ = parsed.maxZ,
+      centerX = (parsed.minX + parsed.maxX) * 0.5,
+      centerZ = (parsed.minZ + parsed.maxZ) * 0.5,
+    }
+  end
+
+  local parsedFlower = parseFlowerObj(FLOWER_MODEL_SPEC)
+
+  local function flowerRotation(tx, ty)
+    return (tx * 131 + ty * 17) % 4
+  end
+
+  local function rotateXZ(x, z, steps)
+    steps = steps % 4
+    if steps == 0 then return x, z end
+    if steps == 1 then return -z, x end
+    if steps == 2 then return -x, -z end
+    return z, -x
+  end
+
+  local function flowerModelBounds()
+    local span = math.max(parsedFlower.sourceWidth, parsedFlower.sourceDepth)
+    local scale = FLOWER_CLUSTER_WIDTH / math.max(span, 0.001)
+    return scale, parsedFlower.centerX, parsedFlower.centerZ, parsedFlower.minY
+  end
+
+  local function flowerKey(tx, ty)
+    return (ty + 64) * 4096 + (tx + 64)
+  end
+
+  local originalForMap = Structures.forMap
+  local wrappedForMap
+  wrappedForMap = function(map)
+    local S = originalForMap(map)
+    if not S or S._lgpeFlowerProcessed then return S end
+    S._lgpeFlowerProcessed = true
+    local def = map and map.def
+    if not def or not S.shapeAt then return S end
+
+    local tw, th = def.width * 4, def.height * 4
+    local placements = {}
+    for ty = 0, th - 1 do
+      for tx = 0, tw - 1 do
+        local shape = S.shapeAt[flowerKey(tx, ty)]
+        if shape and shape.art == "flower" then
+          placements[#placements + 1] = {
+            tx = tx, ty = ty,
+            wx = tx * 8 + 4,
+            wz = ty * 8 + 4,
+            rot = flowerRotation(tx, ty),
+          }
+        end
+      end
+    end
+
+    S._lgpeFlowerPlacements = placements
+    if #placements > 0 then S.flowerQuads = {} end
+    return S
+  end
+  Structures.forMap = wrappedForMap
+
+  local meshMeta = setmetatable({}, { __mode = "k" })
+  local cache = {}
+
+  local function releaseMesh(mesh)
+    if mesh and mesh.release then pcall(mesh.release, mesh) end
+  end
+
+  local function clear(mapId)
+    if mapId then
+      local rec = cache[mapId]
+      if rec then releaseMesh(rec.mesh) end
+      cache[mapId] = nil
+    else
+      for _, rec in pairs(cache) do releaseMesh(rec.mesh) end
+      cache = {}
+    end
+  end
+
+  local function buildForMap(map, S)
+    local placements = S and S._lgpeFlowerPlacements
+    if type(placements) ~= "table" or #placements == 0 then return nil, 0 end
+
+    local scale, cx, cz, baseY = flowerModelBounds()
+    local verts, indices, bases = {}, {}, {}
+    local vertCount = 0
+    local maxLocalHeight = math.max(0.001, (parsedFlower.maxY or 1) - (parsedFlower.minY or 0))
+
+    for _, p in ipairs(placements) do
+      local phase = p.wx * 0.061 + p.wz * 0.037 + p.rot * 1.5707963268
+      for _, v in ipairs(parsedFlower.vertices) do
+        local lx = (v.x - cx) * scale
+        local ly = (v.y - baseY) * scale * FLOWER_VERTICAL_SCALE
+        local lz = (v.z - cz) * scale
+        lx, lz = rotateXZ(lx, lz, p.rot)
+        local wx, wy, wz = p.wx + lx, ly, p.wz + lz
+        verts[#verts + 1] = { wx, wy, wz, v.u, v.v, v.shade }
+        local h = math.max(0, math.min(1, (v.y - baseY) / maxLocalHeight))
+        local pa = phase + ly * 0.18
+        bases[#bases + 1] = {
+          x = wx, y = wy, z = wz,
+          bend = h * h,
+          ps = math.sin(pa),
+          pc = math.cos(pa),
+        }
+      end
+      for _, idx in ipairs(parsedFlower.indices) do
+        indices[#indices + 1] = idx + vertCount
+      end
+      vertCount = vertCount + #parsedFlower.vertices
+    end
+
+    local mesh = Voxel3D.newMesh(verts, indices)
+    if mesh and mesh.setTexture then mesh:setTexture(parsedFlower.texture) end
+    if mesh then
+      meshMeta[mesh] = {
+        texture = parsedFlower.texture,
+        verts = verts,
+        bases = bases,
+        lastTick = nil,
+        count = #placements,
+      }
+    end
+    return mesh, #placements
+  end
+
+
+  local originalFlowers = ChunkMesher.flowers
+  local replacementFlowers
+  replacementFlowers = function(map)
+    if not (map and map.id) then return nil end
+
+    local S = wrappedForMap(map)
+    local placements = S and S._lgpeFlowerPlacements
+    if type(placements) ~= "table" or #placements == 0 then
+      return originalFlowers(map)
+    end
+
+    local rec = cache[map.id]
+    if rec and rec.map == map and rec.S == S and rec.mesh then return rec.mesh end
+
+    if rec then releaseMesh(rec.mesh) end
+    local mesh, count = buildForMap(map, S)
+    if not mesh then return nil end
+    cache[map.id] = { map = map, S = S, mesh = mesh, count = count }
+    mod.log:info("LGPE FLOWERS V4.1 active on %s: %d flower tiles", tostring(map.id), count)
+    return mesh
+  end
+  ChunkMesher.flowers = replacementFlowers
+
+  local function animate(meta)
+    local raw = love.timer and love.timer.getTime and love.timer.getTime() or os.clock()
+    local tick = math.floor(raw * ANIM_HZ)
+    if meta.lastTick == tick then return end
+    meta.lastTick = tick
+
+    local t = (tick / ANIM_HZ) * WIND_SPEED
+    local st, ct = math.sin(t), math.cos(t)
+    for i, b in ipairs(meta.bases) do
+      local wave = st * b.pc + ct * b.ps
+      local sway = wave * WIND_PIXELS * b.bend
+      local row = meta.verts[i]
+      row[1] = b.x + sway
+      row[2] = b.y
+      row[3] = b.z + sway * 0.16
+    end
+  end
+
+  local downstreamDraw = Voxel3D.draw
+  local flowerDraw
+  flowerDraw = function(mesh, tex, model, pull, sunModel)
+    local meta = meshMeta[mesh]
+    if not meta then
+      return downstreamDraw(mesh, tex, model, pull, sunModel)
+    end
+
+    animate(meta)
+    if mesh.setVertices then pcall(mesh.setVertices, mesh, meta.verts) end
+
+    if type(Voxel3D.seams) == "function" then Voxel3D.seams(false) end
+    if type(Voxel3D.glass) == "function" then Voxel3D.glass(false) end
+    local ok, result = pcall(downstreamDraw, mesh, meta.texture, model, pull, sunModel)
+    if type(Voxel3D.glass) == "function" then Voxel3D.glass(true) end
+    if type(Voxel3D.seams) == "function" then Voxel3D.seams(true) end
+    if not ok then error(result, 0) end
+    return result
+  end
+  Voxel3D.draw = flowerDraw
+
+  -- Combined-mod composition: Grass installed first and its self-heal follows
+  -- this pointer. Point it at the fully composed flower->grass draw chain so
+  -- the two systems never fight each other on input.step. Later tree/building
+  -- companion mods are allowed to replace this pointer with their own wrapper.
+  if Voxel3D._grassObjReplacerV3Draw then
+    Voxel3D._grassObjReplacerV3Draw = flowerDraw
+  end
+
+  mod.events:on("map.reloaded", function(payload)
+    if payload and payload.reason == "colors" then return end
+    local id = payload and (payload.mapId or (payload.map and payload.map.id))
+    clear(id)
+  end)
+
+  mod.hooks:wrap("input.step", function(next, game, dt)
+    local result = next(game, dt)
+    if ChunkMesher.flowers ~= replacementFlowers then ChunkMesher.flowers = replacementFlowers end
+    if Structures.forMap ~= wrappedForMap then Structures.forMap = wrappedForMap end
+    local tree = mod.find("DRAMATIC_SHAPE_TREE_OBJ_REPLACER_V1")
+    local building = mod.find("DRAMATIC_SHAPE_HGSS_BUILDING_OBJ_REPLACER_V1")
+    if not tree and not building and Voxel3D.draw ~= flowerDraw then
+      Voxel3D.draw = flowerDraw
+    end
+    return result
+  end)
+
+  pcall(Structures.invalidate)
+  pcall(ChunkMesher.invalidate)
+
+  mod.exports.flowers = {
+    installed = true,
+    voxelMod = targetId,
+    voxelVersion = dep.version,
+    bridgeMode = bridgeMode,
+    windHz = ANIM_HZ,
+    windSpeed = WIND_SPEED,
+    windPixels = WIND_PIXELS,
+    model = {
+      triangles = parsedFlower.triangles,
+      uniqueVertices = parsedFlower.uniqueVertices,
+      sourceWidth = parsedFlower.sourceWidth,
+      sourceHeight = parsedFlower.sourceHeight,
+      sourceDepth = parsedFlower.sourceDepth,
+      clusterWidth = FLOWER_CLUSTER_WIDTH,
+    },
+  }
+  mod.exports.forceFlowerRebuild = function(mapId)
+    clear(mapId)
+    if type(Structures.invalidate) == "function" then pcall(Structures.invalidate, mapId) end
+    if type(ChunkMesher.invalidate) == "function" then
+      if mapId then return ChunkMesher.invalidate(mapId) end
+      return ChunkMesher.invalidate()
+    end
+  end
+
+  mod.log:info(
+    "LGPE FLOWER V4.1.0: target=%s %s bridge=%s model=%d tris/%d verts, footprint=%.1fpx, wind=%dHz",
+    tostring(targetId), tostring(dep.version), tostring(bridgeMode),
+    parsedFlower.triangles, parsedFlower.uniqueVertices, FLOWER_CLUSTER_WIDTH, ANIM_HZ)
+end
+
+
+return function(mod)
+  installGrass(mod)
+  installFlowers(mod)
+  mod.exports.combined = true
+  mod.exports.combinedVersion = "1.0.0"
+  mod.log:info("HD GRASS + LGPE FLOWERS COMBINED v1.0.0 installed")
 end

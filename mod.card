@@ -1,22 +1,17 @@
 return {
-  summary = "Optimized custom-OBJ grass replacement for Dramaless Shape and Dramatic Shape.",
-  author = "randyadr",
-  tags = { "graphics", "voxel", "grass", "3d", "wind", "performance", "dramaless" },
+  summary = "One mod containing the optimized HD grass replacement and LGPE wind-animated 3D flowers.",
+  author = "randyadr custom build",
+  tags = { "graphics", "3d", "voxel", "grass", "flowers", "wind", "lgpe" },
   differences = {
     changed = {
-      "auto-detects DRAMALESS_SHAPE or DRAMATIC_SHAPE and patches the live voxel renderer",
-      "upright voxel grass is replaced at the ChunkMesher.grass / Voxel3D.draw seam",
-      "uploaded sht_grass.obj is placed at native 8x8 tuft positions when available",
-      "OBJ geometry is indexed and split into lazily built 64x64 world chunks",
-      "off-screen grass chunks are culled before Voxel3D.draw"
+      "upright voxel grass is replaced by the custom HD grass OBJ",
+      "native voxel flowers are replaced by the LGPE flower model",
+      "grass and flowers sway in the wind at a 60 Hz animation cadence",
+      "grass and flower rendering share one composed Voxel3D wrapper chain"
     },
-    added = {
-      "Dramaless st_voxel pipeline bridge",
-      "idle GPU chunk eviction",
-      "visible-chunk-only legacy CPU sway at a fixed 60 Hz real-time cadence with faster wind",
-      "precomputed legacy phase math to make 60 Hz sway substantially cheaper",
-      "bridge and cache diagnostics through mod exports"
+    known = {
+      "requires Dramaless Shape or Dramatic Shape",
+      "disable the standalone HD Grass and standalone Flower Replacer mods when using this combined build"
     }
-  },
-  compat = { modApi = 2 }
+  }
 }

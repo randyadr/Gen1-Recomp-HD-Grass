@@ -1,19 +1,15 @@
-# Submit this mod to gen1recomp-mod-index
+# Gen1Recomp mod-index entry
 
-The ready entry is:
+The ready combined-mod entry is:
 
-`index-entry/randyadr@DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3/`
+`index-entry/randyadr@DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED/`
 
-After this source repository exists at:
+Copy that folder into your fork of `bryanthaboi/gen1recomp-mod-index` under:
 
-`https://github.com/randyadr/Gen1-Recomp-HD-Grass`
+`mods/randyadr@DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED/`
 
-and you have published the first **v3.4.0** GitHub Release with the installable ZIP asset, submit the index entry:
+The entry points at the existing GitHub repo:
 
-1. Fork `bryanthaboi/gen1recomp-mod-index`.
-2. Copy the folder above into the fork as:
-   `mods/randyadr@DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3/`
-3. The index folder must contain only `meta.json` and `description.md` (thumbnail is optional; none is included here).
-4. Open a pull request.
+`randyadr/Gen1-Recomp-HD-Grass`
 
-The entry already has `github` and `automatic_version_check: true`, so after acceptance you normally release future versions in this mod repository only; the index refresh process can detect newer GitHub Releases automatically.
+It has automatic GitHub version checking enabled. After the combined listing is accepted, future versions are published from the GitHub repo/releases rather than requiring a new index entry for every patch release.

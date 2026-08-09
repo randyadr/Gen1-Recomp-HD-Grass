@@ -1,0 +1,37 @@
+{
+  "id": "DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED",
+  "title": "HD Grass + LGPE Wind Flowers",
+  "author": "randyadr",
+  "summary": "Combines optimized custom 3D grass and LGPE 3D flower replacements for Dramaless Shape / Dramatic Shape, with 60 Hz wind sway.",
+  "version": "1.0.0",
+  "categories": [
+    "ART"
+  ],
+  "tags": [
+    "grass",
+    "flowers",
+    "3d",
+    "voxel",
+    "wind",
+    "dramaless",
+    "dramatic shape"
+  ],
+  "repo": "https://github.com/randyadr/Gen1-Recomp-HD-Grass",
+  "github": "randyadr/Gen1-Recomp-HD-Grass",
+  "automatic_version_check": true,
+  "api": 2,
+  "game_version": "0.0.0-dev || >=0.1.28 <2.0.0",
+  "profile": "content",
+  "affects_link": false,
+  "experimental": false,
+  "permissions": [
+    "engine_internals"
+  ],
+  "conflicts": [
+    "DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3",
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V4",
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V3",
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V2"
+  ],
+  "license": "MIT (code only)"
+}
