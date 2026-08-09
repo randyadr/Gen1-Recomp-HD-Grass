@@ -1,15 +1,13 @@
-# Gen1Recomp mod-index entry
+# Gen1Recomp mod-index
 
-The ready combined-mod entry is:
+This build intentionally keeps the existing mod ID:
 
-`index-entry/randyadr@DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED/`
+`DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3`
 
-Copy that folder into your fork of `bryanthaboi/gen1recomp-mod-index` under:
-
-`mods/randyadr@DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED/`
-
-The entry points at the existing GitHub repo:
+If that HD Grass listing is already present in the index, this is an **update to that same listing**, not a second combined-mod listing. The GitHub repository remains:
 
 `randyadr/Gen1-Recomp-HD-Grass`
 
-It has automatic GitHub version checking enabled. After the combined listing is accepted, future versions are published from the GitHub repo/releases rather than requiring a new index entry for every patch release.
+The ready metadata folder is:
+
+`index-entry/randyadr@DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3/`

@@ -1,14 +1,27 @@
-# HD Grass + LGPE Wind Flowers v1.0.0
+# HD Grass + LGPE Wind Flowers v3.4.1
 
-Combined Gen1Recomp graphics mod containing:
+This is a **seamless update** of the existing HD Grass mod. It deliberately keeps the original mod ID:
 
-- **HD Grass 3.4.0** replacement from the uploaded grass build
-- **LGPE Flower Replacer 4.1.0** with the corrected flower texture mapping
-- 60 Hz wind sway for both systems
+`DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3`
 
-## Install
-Import this ZIP as one mod and enable it with **Dramaless Shape** or **Dramatic Shape**.
+That means an installed **HD Grass v3.4.0** can update directly to **v3.4.1**, which now includes the flower replacement too.
 
-Disable the old standalone grass and flower replacers first. This combined mod uses a new ID and declares conflicts with the old standalone IDs so they should not be enabled together.
+## Features
+- optimized custom 3D grass replacement
+- LGPE 3D flower replacement with corrected texture mapping
+- 60 Hz grass wind
+- 60 Hz flower wind sway
+- one composed renderer chain
+- Dramaless Shape + Dramatic Shape compatibility
 
-It stays at priority **9000**, allowing the separate Tree Replacer (9100) and HGSS Building Replacer (9200) to compose on top when installed.
+## Important
+Disable/remove the separate flower replacer when using this version. You do **not** need to uninstall the old HD Grass mod; this package is its update.
+
+## GitHub updates
+Repository: `randyadr/Gen1-Recomp-HD-Grass`
+
+Release assets are built as:
+
+`DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3-<version>.zip`
+
+which is the filename Gen1Recomp prefers for this installed mod ID.

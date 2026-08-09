@@ -1,7 +1,7 @@
 {
-  "id": "DRAMATIC_SHAPE_HD_GRASS_LGPE_FLOWERS_COMBINED",
+  "id": "DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3",
   "name": "HD Grass + LGPE Wind Flowers",
-  "version": "1.0.0",
+  "version": "3.4.1",
   "api": 2,
   "entry": "main.lua",
   "profile": "content",
@@ -14,7 +14,6 @@
     "DRAMATIC_SHAPE"
   ],
   "conflicts": [
-    "DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3",
     "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V4",
     "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V3",
     "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V2"
@@ -23,6 +22,6 @@
     "engine_internals"
   ],
   "affects_link": false,
-  "description": "Combined optimized HD grass replacement and LGPE 3D flower replacement for Dramatic Shape / Dramaless Shape. Includes 60 Hz wind sway for grass and flowers in one composed renderer chain.",
+  "description": "Seamless upgrade of HD Grass V3: keeps the optimized custom 3D grass replacement and adds the LGPE 3D flower replacement with corrected textures and 60 Hz wind sway, in one composed renderer chain.",
   "github": "randyadr/Gen1-Recomp-HD-Grass"
 }

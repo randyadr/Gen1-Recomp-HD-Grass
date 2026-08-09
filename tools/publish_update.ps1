@@ -73,8 +73,8 @@ $versionMajor = [int]$versionParts[0]
 $versionMinor = [int]$versionParts[1]
 $versionPatch = [int]$versionParts[2]
 
-# First publish of the combined mod: keep its current version if that exact
-# release asset does not exist yet. Later publishes auto-bump the patch version.
+# Keep the manifest version when that exact release asset does not exist yet.
+# After it has been published once, future runs auto-bump the patch version.
 $currentTag = "v$currentVersion"
 $currentAsset = "$modId-$currentVersion.zip"
 $releaseExists = $false
@@ -92,7 +92,7 @@ if ($releaseExists) {
     Write-Host "Version: $oldVersion -> $newVersion" -ForegroundColor Green
 } else {
     $newVersion = $currentVersion
-    Write-Host "First combined release: keeping version $newVersion" -ForegroundColor Green
+    Write-Host "New release: keeping version $newVersion" -ForegroundColor Green
 }
 
 $status = (& git status --porcelain --untracked-files=all)

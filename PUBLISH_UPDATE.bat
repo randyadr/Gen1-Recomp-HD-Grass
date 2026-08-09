@@ -2,7 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo ============================================================
-echo  HD GRASS + LGPE FLOWERS - PUBLISH UPDATE
+echo  HD GRASS + LGPE FLOWERS - SEAMLESS UPDATE
 echo ============================================================
 echo.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\publish_update.ps1"

@@ -1,14 +1,15 @@
 {
   "id": "DRAMATIC_SHAPE_GRASS_OBJ_REPLACER_V3",
-  "title": "Grass OBJ Replacer V3 - Dramatic + Dramaless",
+  "title": "HD Grass + LGPE Wind Flowers",
   "author": "randyadr",
-  "summary": "Replaces upright voxel grass with a custom 3D OBJ in Dramaless Shape or Dramatic Shape, with optimized chunks and fast 60 Hz wind.",
-  "version": "3.4.0",
+  "summary": "Optimized custom 3D grass plus LGPE 3D flower replacements for Dramaless Shape / Dramatic Shape, with 60 Hz wind sway.",
+  "version": "3.4.1",
   "categories": [
     "ART"
   ],
   "tags": [
     "grass",
+    "flowers",
     "3d",
     "voxel",
     "wind",
@@ -26,6 +27,10 @@
   "permissions": [
     "engine_internals"
   ],
-  "conflicts": [],
+  "conflicts": [
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V4",
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V3",
+    "DRAMATIC_SHAPE_LGPE_FLOWER_OBJ_REPLACER_V2"
+  ],
   "license": "MIT (code only)"
 }
