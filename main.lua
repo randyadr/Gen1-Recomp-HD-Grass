@@ -1302,9 +1302,31 @@ end
 
 
 return function(mod)
-  installGrass(mod)
-  installFlowers(mod)
-  mod.exports.combined = true
+  mod.options:define({
+    {
+      key     = "render_mode",
+      label   = "RENDER MODE (Restart to apply)",
+      type    = "choice",
+      default = "both",
+      choices = {
+        { "GRASS + FLOWERS",           "both"         },
+        { "GRASS ONLY",                "grass_only"   },
+        { "FLOWERS ONLY",              "flowers_only" },
+      },
+    },
+  })
+
+  local renderMode    = mod.options:get("render_mode")
+  local grassActive   = renderMode == "both" or renderMode == "grass_only"
+  local flowersActive = renderMode == "both" or renderMode == "flowers_only"
+
+  if grassActive   then installGrass(mod)   end
+  if flowersActive then installFlowers(mod) end
+
+  mod.exports.combined        = true
   mod.exports.combinedVersion = "1.0.0"
-  mod.log:info("HD GRASS + LGPE FLOWERS COMBINED v1.0.0 installed")
+  mod.exports.renderMode      = renderMode
+  mod.log:info(
+    "HD GRASS + LGPE FLOWERS COMBINED v1.0.0 installed (mode=%s)",
+    renderMode)
 end
