@@ -1182,7 +1182,7 @@ local function installFlowers(mod)
   replacementFlowers = function(map)
     if not (map and map.id) then return nil end
 
-    local S = wrappedForMap(map)
+    local S = Structures.forMap(map)
     local placements = S and S._lgpeFlowerPlacements
     if type(placements) ~= "table" or #placements == 0 then
       return originalFlowers(map)
@@ -1203,7 +1203,7 @@ local function installFlowers(mod)
   local function animate(meta)
     local raw = love.timer and love.timer.getTime and love.timer.getTime() or os.clock()
     local tick = math.floor(raw * ANIM_HZ)
-    if meta.lastTick == tick then return end
+    if meta.lastTick == tick then return false end
     meta.lastTick = tick
 
     local t = (tick / ANIM_HZ) * WIND_SPEED
@@ -1216,6 +1216,7 @@ local function installFlowers(mod)
       row[2] = b.y
       row[3] = b.z + sway * 0.16
     end
+    return true
   end
 
   local downstreamDraw = Voxel3D.draw
@@ -1226,8 +1227,8 @@ local function installFlowers(mod)
       return downstreamDraw(mesh, tex, model, pull, sunModel)
     end
 
-    animate(meta)
-    if mesh.setVertices then pcall(mesh.setVertices, mesh, meta.verts) end
+    local changed = animate(meta)
+    if changed and mesh.setVertices then pcall(mesh.setVertices, mesh, meta.verts) end
 
     if type(Voxel3D.seams) == "function" then Voxel3D.seams(false) end
     if type(Voxel3D.glass) == "function" then Voxel3D.glass(false) end
@@ -1302,9 +1303,31 @@ end
 
 
 return function(mod)
-  installGrass(mod)
-  installFlowers(mod)
-  mod.exports.combined = true
+  mod.options:define({
+    {
+      key     = "render_mode",
+      label   = "RENDER MODE (Restart to apply)",
+      type    = "choice",
+      default = "both",
+      choices = {
+        { "GRASS + FLOWERS",           "both"         },
+        { "GRASS ONLY",                "grass_only"   },
+        { "FLOWERS ONLY",              "flowers_only" },
+      },
+    },
+  })
+
+  local renderMode    = mod.options:get("render_mode")
+  local grassActive   = renderMode == "both" or renderMode == "grass_only"
+  local flowersActive = renderMode == "both" or renderMode == "flowers_only"
+
+  if grassActive   then installGrass(mod)   end
+  if flowersActive then installFlowers(mod) end
+
+  mod.exports.combined        = true
   mod.exports.combinedVersion = "1.0.0"
-  mod.log:info("HD GRASS + LGPE FLOWERS COMBINED v1.0.0 installed")
+  mod.exports.renderMode      = renderMode
+  mod.log:info(
+    "HD GRASS + LGPE FLOWERS COMBINED v1.0.0 installed (mode=%s)",
+    renderMode)
 end
